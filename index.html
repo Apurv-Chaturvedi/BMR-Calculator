@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BMR Calculator</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 400px; margin: auto; }
+    label, input, select { display: block; margin-bottom: 10px; width: 100%; }
+    button { padding: 8px 12px; }
+    #result { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h3>BMR Calculator (Mifflin-St Jeor)</h3>
+
+  <label>Age: <input type="number" id="age" /></label>
+
+  <label>Gender:
+    <select id="gender">
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
+  </label>
+
+  <label>Weight Unit:
+    <select id="weightUnit" onchange="toggleWeightUnit()">
+      <option value="kg">Kilograms (kg)</option>
+      <option value="lb">Pounds (lbs)</option>
+    </select>
+  </label>
+  <label id="weightLabel">Weight (kg): <input type="number" id="weight" /></label>
+
+  <label>Height Unit:
+    <select id="heightUnit" onchange="toggleHeightUnit()">
+      <option value="cm">Centimeters (cm)</option>
+      <option value="ftin">Feet/Inches</option>
+    </select>
+  </label>
+  <div id="heightCmField">
+    <label>Height (cm): <input type="number" id="heightCm" /></label>
+  </div>
+  <div id="heightFtInField" style="display: none;">
+    <label>Feet: <input type="number" id="heightFt" /></label>
+    <label>Inches: <input type="number" id="heightIn" /></label>
+  </div>
+
+  <button onclick="calculateBMR()">Calculate</button>
+  <p id="result"></p>
+
+  <script>
+    function toggleWeightUnit() {
+      const unit = document.getElementById("weightUnit").value;
+      const label = document.getElementById("weightLabel");
+      label.innerHTML = unit === "kg" ? 'Weight (kg): <input type="number" id="weight" />' : 'Weight (lbs): <input type="number" id="weight" />';
+    }
+
+    function toggleHeightUnit() {
+      const unit = document.getElementById("heightUnit").value;
+      if (unit === "cm") {
+        document.getElementById("heightCmField").style.display = "block";
+        document.getElementById("heightFtInField").style.display = "none";
+      } else {
+        document.getElementById("heightCmField").style.display = "none";
+        document.getElementById("heightFtInField").style.display = "block";
+      }
+    }
+
+    function calculateBMR() {
+      const age = parseInt(document.getElementById("age").value);
+      const gender = document.getElementById("gender").value;
+      const weightUnit = document.getElementById("weightUnit").value;
+      const heightUnit = document.getElementById("heightUnit").value;
+
+      let weight = parseFloat(document.getElementById("weight").value);
+      if (weightUnit === "lb") {
+        weight = weight * 0.453592; // lbs to kg
+      }
+
+      let height;
+      if (heightUnit === "cm") {
+        height = parseFloat(document.getElementById("heightCm").value);
+      } else {
+        const feet = parseFloat(document.getElementById("heightFt").value);
+        const inches = parseFloat(document.getElementById("heightIn").value);
+        height = (feet * 12 + inches) * 2.54; // ft/in to cm
+      }
+
+      let bmr;
+      if (gender === "male") {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+
+      document.getElementById("result").innerText = `Your BMR is ${bmr.toFixed(2)} calories/day.`;
+    }
+  </script>
+</body>
+</html>
