@@ -1,100 +1,436 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BMR Calculator</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 400px; margin: auto; }
-    label, input, select { display: block; margin-bottom: 10px; width: 100%; }
-    button { padding: 8px 12px; }
-    #result { margin-top: 20px; font-weight: bold; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 460px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 32px 32px 28px;
+      color: #fff;
+    }
+
+    .card-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .card-header p {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .card-body { padding: 28px 32px 32px; }
+
+    .field { margin-bottom: 20px; }
+
+    .field > label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .field input[type="number"],
+    .field select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 0.97rem;
+      color: #111827;
+      transition: border-color 0.2s;
+      background: #f9fafb;
+      outline: none;
+    }
+
+    .field input[type="number"]:focus,
+    .field select:focus {
+      border-color: #667eea;
+      background: #fff;
+    }
+
+    .field input.error { border-color: #ef4444; }
+
+    .error-msg {
+      font-size: 0.75rem;
+      color: #ef4444;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .gender-toggle {
+      display: flex;
+      gap: 10px;
+    }
+
+    .gender-toggle input[type="radio"] { display: none; }
+
+    .gender-toggle label {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .gender-toggle input[type="radio"]:checked + label {
+      border-color: #667eea;
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    .unit-toggle {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .unit-btn {
+      padding: 6px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #6b7280;
+      background: #f9fafb;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .unit-btn.active {
+      border-color: #667eea;
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    .ft-in-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .ft-in-row .subfield { flex: 1; }
+
+    .ft-in-row .subfield label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #9ca3af;
+      margin-bottom: 5px;
+    }
+
+    .btn-calc {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(102,126,234,0.45);
+    }
+
+    .btn-calc:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(102,126,234,0.55);
+    }
+
+    .btn-calc:active { transform: translateY(0); }
+
+    .results {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .results.visible { display: block; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, #f0f4ff, #f5f3ff);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      border: 1.5px solid #e0e7ff;
+    }
+
+    .result-card .rc-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #7c3aed;
+      margin-bottom: 6px;
+    }
+
+    .result-card .rc-value {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #1e1b4b;
+      line-height: 1;
+    }
+
+    .result-card .rc-unit {
+      font-size: 0.72rem;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+
+    .result-card.full {
+      grid-column: span 2;
+      text-align: left;
+      padding: 16px 18px;
+    }
+
+    .breakdown-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #7c3aed;
+      margin-bottom: 10px;
+    }
+
+    .tdee-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 6px 0;
+      color: #374151;
+      border-bottom: 1px solid #e9e4ff;
+    }
+
+    .tdee-item:last-child { border-bottom: none; }
+
+    .tdee-item .ti-val {
+      font-weight: 700;
+      color: #4f46e5;
+    }
   </style>
 </head>
 <body>
-  <h3>BMR Calculator (Mifflin-St Jeor)</h3>
 
-  <label>Age: <input type="number" id="age" /></label>
-
-  <label>Gender:
-    <select id="gender">
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-    </select>
-  </label>
-
-  <label>Weight Unit:
-    <select id="weightUnit" onchange="toggleWeightUnit()">
-      <option value="kg">Kilograms (kg)</option>
-      <option value="lb">Pounds (lbs)</option>
-    </select>
-  </label>
-  <label id="weightLabel">Weight (kg): <input type="number" id="weight" /></label>
-
-  <label>Height Unit:
-    <select id="heightUnit" onchange="toggleHeightUnit()">
-      <option value="cm">Centimeters (cm)</option>
-      <option value="ftin">Feet/Inches</option>
-    </select>
-  </label>
-  <div id="heightCmField">
-    <label>Height (cm): <input type="number" id="heightCm" /></label>
-  </div>
-  <div id="heightFtInField" style="display: none;">
-    <label>Feet: <input type="number" id="heightFt" /></label>
-    <label>Inches: <input type="number" id="heightIn" /></label>
+<div class="card">
+  <div class="card-header">
+    <h1>BMR Calculator</h1>
+    <p>Mifflin-St Jeor Equation &mdash; Basal Metabolic Rate</p>
   </div>
 
-  <button onclick="calculateBMR()">Calculate</button>
-  <p id="result"></p>
+  <div class="card-body">
 
-  <script>
-    function toggleWeightUnit() {
-      const unit = document.getElementById("weightUnit").value;
-      const label = document.getElementById("weightLabel");
-      label.innerHTML = unit === "kg" ? 'Weight (kg): <input type="number" id="weight" />' : 'Weight (lbs): <input type="number" id="weight" />';
+    <div class="field">
+      <label for="age">Age (years)</label>
+      <input type="number" id="age" placeholder="e.g. 25" min="1" max="120" />
+      <div class="error-msg" id="age-err">Please enter a valid age (1–120).</div>
+    </div>
+
+    <div class="field">
+      <label>Gender</label>
+      <div class="gender-toggle">
+        <input type="radio" name="gender" id="male" value="male" checked />
+        <label for="male">Male</label>
+        <input type="radio" name="gender" id="female" value="female" />
+        <label for="female">Female</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Weight</label>
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="btn-kg" onclick="setWeightUnit('kg')">kg</button>
+        <button class="unit-btn" id="btn-lb" onclick="setWeightUnit('lb')">lbs</button>
+      </div>
+      <input type="number" id="weight" placeholder="e.g. 70" min="1" />
+      <div class="error-msg" id="weight-err">Please enter a valid weight.</div>
+    </div>
+
+    <div class="field">
+      <label>Height</label>
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="btn-cm" onclick="setHeightUnit('cm')">cm</button>
+        <button class="unit-btn" id="btn-ftin" onclick="setHeightUnit('ftin')">ft / in</button>
+      </div>
+      <div id="height-cm-wrap">
+        <input type="number" id="heightCm" placeholder="e.g. 175" min="1" />
+      </div>
+      <div id="height-ftin-wrap" style="display:none">
+        <div class="ft-in-row">
+          <div class="subfield">
+            <label for="heightFt">Feet</label>
+            <input type="number" id="heightFt" placeholder="5" min="0" />
+          </div>
+          <div class="subfield">
+            <label for="heightIn">Inches</label>
+            <input type="number" id="heightIn" placeholder="9" min="0" max="11" />
+          </div>
+        </div>
+      </div>
+      <div class="error-msg" id="height-err">Please enter a valid height.</div>
+    </div>
+
+    <div class="field">
+      <label for="activity">Activity Level</label>
+      <select id="activity">
+        <option value="1.2">Sedentary (little or no exercise)</option>
+        <option value="1.375">Lightly active (1–3 days/week)</option>
+        <option value="1.55" selected>Moderately active (3–5 days/week)</option>
+        <option value="1.725">Very active (6–7 days/week)</option>
+        <option value="1.9">Super active (physical job or 2x/day)</option>
+      </select>
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">Calculate BMR &amp; TDEE</button>
+
+    <div class="results" id="results">
+      <div class="results-grid">
+        <div class="result-card">
+          <div class="rc-label">BMR</div>
+          <div class="rc-value" id="res-bmr">—</div>
+          <div class="rc-unit">kcal / day</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">TDEE</div>
+          <div class="rc-value" id="res-tdee">—</div>
+          <div class="rc-unit">kcal / day</div>
+        </div>
+        <div class="result-card full">
+          <div class="breakdown-title">Daily calories by goal</div>
+          <div class="tdee-item">
+            <span>Weight loss &minus;500 kcal</span>
+            <span class="ti-val" id="res-loss">—</span>
+          </div>
+          <div class="tdee-item">
+            <span>Maintenance</span>
+            <span class="ti-val" id="res-maintain">—</span>
+          </div>
+          <div class="tdee-item">
+            <span>Weight gain +500 kcal</span>
+            <span class="ti-val" id="res-gain">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let weightUnit = 'kg';
+  let heightUnit = 'cm';
+
+  function setWeightUnit(unit) {
+    weightUnit = unit;
+    document.getElementById('btn-kg').classList.toggle('active', unit === 'kg');
+    document.getElementById('btn-lb').classList.toggle('active', unit === 'lb');
+    document.getElementById('weight').placeholder = unit === 'kg' ? 'e.g. 70' : 'e.g. 154';
+  }
+
+  function setHeightUnit(unit) {
+    heightUnit = unit;
+    document.getElementById('btn-cm').classList.toggle('active', unit === 'cm');
+    document.getElementById('btn-ftin').classList.toggle('active', unit === 'ftin');
+    document.getElementById('height-cm-wrap').style.display = unit === 'cm' ? 'block' : 'none';
+    document.getElementById('height-ftin-wrap').style.display = unit === 'ftin' ? 'block' : 'none';
+  }
+
+  function showError(errId, inputId) {
+    document.getElementById(errId).style.display = 'block';
+    if (inputId) document.getElementById(inputId).classList.add('error');
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('input.error').forEach(el => el.classList.remove('error'));
+  }
+
+  function calculate() {
+    clearErrors();
+    let valid = true;
+
+    const age = parseInt(document.getElementById('age').value);
+    if (!age || age < 1 || age > 120) { showError('age-err', 'age'); valid = false; }
+
+    const gender = document.querySelector('input[name="gender"]:checked').value;
+
+    let weight = parseFloat(document.getElementById('weight').value);
+    if (!weight || weight <= 0) { showError('weight-err', 'weight'); valid = false; }
+    else if (weightUnit === 'lb') weight *= 0.453592;
+
+    let height;
+    if (heightUnit === 'cm') {
+      height = parseFloat(document.getElementById('heightCm').value);
+      if (!height || height <= 0) { showError('height-err', 'heightCm'); valid = false; }
+    } else {
+      const ft = parseFloat(document.getElementById('heightFt').value) || 0;
+      const inches = parseFloat(document.getElementById('heightIn').value) || 0;
+      height = (ft * 12 + inches) * 2.54;
+      if (height <= 0) { showError('height-err', 'heightFt'); valid = false; }
     }
 
-    function toggleHeightUnit() {
-      const unit = document.getElementById("heightUnit").value;
-      if (unit === "cm") {
-        document.getElementById("heightCmField").style.display = "block";
-        document.getElementById("heightFtInField").style.display = "none";
-      } else {
-        document.getElementById("heightCmField").style.display = "none";
-        document.getElementById("heightFtInField").style.display = "block";
-      }
-    }
+    if (!valid) return;
 
-    function calculateBMR() {
-      const age = parseInt(document.getElementById("age").value);
-      const gender = document.getElementById("gender").value;
-      const weightUnit = document.getElementById("weightUnit").value;
-      const heightUnit = document.getElementById("heightUnit").value;
+    const bmr = gender === 'male'
+      ? 10 * weight + 6.25 * height - 5 * age + 5
+      : 10 * weight + 6.25 * height - 5 * age - 161;
 
-      let weight = parseFloat(document.getElementById("weight").value);
-      if (weightUnit === "lb") {
-        weight = weight * 0.453592; // lbs to kg
-      }
+    const activity = parseFloat(document.getElementById('activity').value);
+    const tdee = bmr * activity;
 
-      let height;
-      if (heightUnit === "cm") {
-        height = parseFloat(document.getElementById("heightCm").value);
-      } else {
-        const feet = parseFloat(document.getElementById("heightFt").value);
-        const inches = parseFloat(document.getElementById("heightIn").value);
-        height = (feet * 12 + inches) * 2.54; // ft/in to cm
-      }
+    document.getElementById('res-bmr').textContent = Math.round(bmr).toLocaleString();
+    document.getElementById('res-tdee').textContent = Math.round(tdee).toLocaleString();
+    document.getElementById('res-loss').textContent = Math.round(tdee - 500).toLocaleString() + ' kcal';
+    document.getElementById('res-maintain').textContent = Math.round(tdee).toLocaleString() + ' kcal';
+    document.getElementById('res-gain').textContent = Math.round(tdee + 500).toLocaleString() + ' kcal';
 
-      let bmr;
-      if (gender === "male") {
-        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-      } else {
-        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-      }
+    const results = document.getElementById('results');
+    results.classList.add('visible');
+    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
 
-      document.getElementById("result").innerText = `Your BMR is ${bmr.toFixed(2)} calories/day.`;
-    }
-  </script>
 </body>
 </html>
